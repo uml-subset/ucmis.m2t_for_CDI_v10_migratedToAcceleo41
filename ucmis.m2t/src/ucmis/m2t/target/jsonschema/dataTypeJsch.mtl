@@ -1,0 +1,26 @@
+[**
+ * The documentation of the module modelJsonldFile.
+ */]
+[module dataTypeJsch('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::service::utilityServices/]
+[import ucmis::m2t::target::jsonschema::commonJsch/]
+[import ucmis::m2t::target::rdf::commonRdf/]
+
+[comment encoding = UTF-8 /]
+[**
+*/]
+[template public dataTypeJsch(aDataType : uml::DataType) post(self.trim())]
+  "dt-[aDataType.name/]": {
+    "description": "[aDataType.getProperty('DDI-CDI_RDF_NS')/][aDataType.name/]",
+    "type": ['['/]"object"],
+    "properties": {
+      [aDataType.genAttributes()/]
+      "@type": {
+        "const": "[aDataType.name/]"
+      }
+    },
+    "required": ['['/][aDataType.requiredAttributes()/]"@type"],
+    "additionalProperties": false
+  },[/template]

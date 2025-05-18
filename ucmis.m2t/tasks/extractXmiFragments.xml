@@ -1,0 +1,5 @@
+<project name="extractXmiFragments" default="transform">
+	<target name="transform">
+		<xslt style="xslt/ExtractClassifier.xslt" in="model/ddi-cdi_canonical-unique-names-eclipse.xmi" out="generated/DDI-CDI_1-0/doc/_rst/xmi/dummy"/>
+	</target>
+</project>

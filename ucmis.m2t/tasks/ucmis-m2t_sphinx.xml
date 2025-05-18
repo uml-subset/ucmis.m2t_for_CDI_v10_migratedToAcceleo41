@@ -1,0 +1,11 @@
+<project name="UCMIS M2T" default="sphinx">
+	<target name="sphinx">
+		<exec executable="sphinx-build">
+			<arg line="-b html"/>
+			<arg line="-c sphinx/default"/>
+			<arg line="-D html_title=&quot;UML Class Model Interoperable Subset Model to Text Tool (UCMIS M2T)&quot;"/>
+			<arg line="generated/ucmis.m2t/_rst"/>
+			<arg line="generated/ucmis.m2t/_build"/>
+		</exec>
+	</target>
+</project>

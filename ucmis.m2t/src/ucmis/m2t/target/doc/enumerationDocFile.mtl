@@ -1,0 +1,139 @@
+[**
+ * The documentation of the module aDataTypeFile.
+ */]
+[module enumerationDocFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::query::propertiesQuery/]
+[import ucmis::m2t::target::doc::rstUtilityDoc/]
+[import ucmis::m2t::target::onto::enumerationOnto/]
+[import ucmis::m2t::target::xsd::enumerationXsd/]
+
+[comment encoding = UTF-8 /]
+[**
+ * The documentation of the template processDataType.
+ * @param aDataType - a data type
+*/]
+[template public processEnumerationDoc(anEnumeration : uml::Enumeration) ? (self.e_includeAllItems() or self.e_subsetEnumerations()->includes(anEnumeration.name))]
+  [file (anEnumeration.e_filePath('doc').concat('.rst'), overwrite, 'UTF-8')]
+    [anEnumeration.rst_generationMessageDoc()/]
+    .. _[anEnumeration.qualifiedName/]:
+    
+    [anEnumeration.name.rst_header('*')/]
+    
+    [if (anEnumeration.qualifiedName.tokenize('::')->asOrderedSet()->intersection(anEnumeration.getProperty('ddi-cdi_packages_ignore2').substituteAll(' ', '').tokenize(',')->asOrderedSet())->size() = 0)]
+      **Fully qualified [anEnumeration.eClass().name.toLower()/] name**: [anEnumeration.package.qualifiedName/]:::index:`[anEnumeration.name/]`
+    [else]
+      **Fully qualified [anEnumeration.eClass().name.toLower()/] name**: [anEnumeration.qualifiedName/]
+    [/if]
+    
+    [if (anEnumeration.ownedComment->notEmpty())]
+      [anEnumeration.e_fixClassDocumentation().replaceAll('(=\\s)', '$1\r')/]
+    [else]
+      *NO DOCUMENTATION AVAILABLE*
+    [/if]
+    
+    [file (anEnumeration.e_filePath('doc').concat('.pu'), overwrite, 'UTF-8')]
+      [anEnumeration.pu_dataTypeDiagram(0)/]
+    [/file]
+    .. container::
+       :name: diagram
+    
+       .. dropdown:: Diagram
+          :open:
+    
+          .. uml:: [anEnumeration.qualifiedName.replace(anEnumeration.getModel().name, '').replaceAll('::', '/')/].pu
+    
+    .. container::
+       :name: literals
+    
+       .. dropdown:: Enumeration literals
+          :open:
+    
+          .. list-table::
+             :widths: 20 80
+             :header-rows: 1
+             :class: datatable-enumeration-literals
+    
+             * - Name
+               - Description
+    [for (aLiteral : uml::EnumerationLiteral | anEnumeration.ownedLiteral)]
+               * - [aLiteral.name/]
+                 - [aLiteral.ownedComment->asSequence()->collect(temp1 | temp1.body)/]
+    [/for]
+    
+    .. container::
+       :name: usage
+    
+       .. dropdown:: Usage
+    
+          .. list-table::
+             :widths: 25 25 25 25
+             :header-rows: 1
+             :class: datatable-usage
+    
+             * - Type
+               - Package
+               - Classifier
+               - Attribute
+    [for (aProperty : uml::Property | anEnumeration.eInverse(uml::Property))]
+               * - [aProperty.eContainer().eClass().name/]
+                 - [aProperty.eContainer().oclAsType(uml::Classifier).package.name/]
+                 - :ref:`[aProperty.eContainer().oclAsType(uml::Classifier).qualifiedName/]`
+                 - [aProperty.name/]
+    [/for]
+    
+    [if (anEnumeration.qualifiedName.tokenize('::')->asOrderedSet()->intersection(anEnumeration.getProperty('ddi-cdi_packages_ignore2').substituteAll(' ', '').tokenize(',')->asOrderedSet())->size() = 0)]
+      
+      .. container::
+         :name: encodings
+      
+         .. dropdown:: Syntax representations / encodings
+      
+            All syntax representations except the Canonical XMI are provided as reference points
+            for specific implementations, or for use as defaults if sufficient in the form presented.
+      
+            .. tab-set::
+      
+               .. tab-item:: Canonical XMI
+                  :class-content: encoding
+      
+                  Fragment for the enumeration **[anEnumeration.name/]**
+      
+                  .. literalinclude:: /xmi/[anEnumeration.name/].xmi 
+                     :lines: 2-
+                     :language: xml
+                     :linenos:
+                     :emphasize-lines: 4
+      
+               .. tab-item:: XML Schema
+                  :class-content: encoding
+      [file (anEnumeration.e_filePath('doc').concat('_xsd.txt'), overwrite, 'UTF-8')]
+        [anEnumeration.enumerationXsd()/]
+      [/file]
+      
+                  Fragment for the enumeration **[anEnumeration.name/]**
+      
+                  .. literalinclude:: [anEnumeration.qualifiedName.replace(anEnumeration.getModel().name, '').replaceAll('::', '/')/]_xsd.txt 
+                     :language: xml
+                     :linenos:
+                     :dedent: 2
+                     :emphasize-lines: 1
+      
+      [if (anEnumeration.getProperty('onto').equalsIgnoreCase('true'))]
+                 .. tab-item:: Ontology (Turtle)
+                    :class-content: encoding
+        [file (anEnumeration.e_filePath('doc').concat('.onto.ttl'), overwrite, 'UTF-8')]
+          [anEnumeration.enumerationOnto()/]
+        [/file]
+        
+                    Fragment for the enumeration **[anEnumeration.name/]** (`main ontology <[anEnumeration.getProperty('DDI-CDI_ONTO_URI')/]>`_, `entire ontology as zip <[anEnumeration.getProperty('DDI-CDI_ONTO_URI') + '.zip'/]>`_)
+        
+                    .. literalinclude:: [anEnumeration.qualifiedName.replace(anEnumeration.getModel().name, '').replaceAll('::', '/')/].onto.ttl 
+                       :language: turtle
+                       :linenos:
+                       :emphasize-lines: 3
+      [/if]
+    [/if]
+  [/file]
+[/template]

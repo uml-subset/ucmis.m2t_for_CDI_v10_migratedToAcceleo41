@@ -1,0 +1,5 @@
+<project name="copyXmlXsd" default="copy">
+	<target name="copy">
+		<copy file="xsd/xml.xsd" todir="generated/DDI-CDI_1-0/encoding/xml-schema"/>
+	</target>
+</project>

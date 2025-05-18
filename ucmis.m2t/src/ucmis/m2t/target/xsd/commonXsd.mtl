@@ -1,0 +1,33 @@
+[**
+ * Module for generating XML Schema.
+ */]
+[module commonXsd('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+
+[comment encoding = UTF-8 /]
+[template public xsd_referenceClass(aType : uml::Type) post(self.trim())]
+  [let aClass : uml::Class = aType.oclAsType(uml::Class)]
+    [if (aClass.e_allSubclassesPlusSelfNonAbstract()->notEmpty())]
+      [for (aSubClass : uml::Class | aClass.e_allSubclassesPlusSelfNonAbstract())]
+        <xs:enumeration value="[aSubClass.name/]"/>
+      [/for]
+    [else]
+      <xs:enumeration value="[aClass.name/]"/>
+    [/if]
+  [/let]
+[/template]
+
+[query public xsd_upperCardinality(aProperty : uml::Property) : String = if aProperty.upper = 1 -  then 'unbounded' else aProperty.upper endif/]
+
+[**
+ * @param aType A type object.
+*/]
+[query public xsd_typeName(aType : uml::Type) : String = if aType.e_typeName() = 'Boolean' then 'xs:boolean' else if aType.e_typeName() = 'Integer' then 'xs:integer' else if aType.e_typeName() = 'String' then 'xs:string' else if aType.e_typeName() = 'Real' then 'xs:double' else if aType.package.name = 'XMLSchemaDataTypes' then aType.name.xsd_primitive() else aType.e_typeName().concat('XsdType') endif endif endif endif endif/]
+
+[query public xsd_primitive(aString : String) : String = if aString = 'XsdAnyUri' then 'xs:anyURI' else if aString = 'XsdDate' then 'xs:date' else if aString = 'XsdLanguage' then 'xs:language' else '' endif endif endif/]
+
+[query public ORIxsd_typeName(aType : uml::Type) : String = if aType.e_typeName() = 'Boolean' then 'xs:boolean' else if aType.e_typeName() = 'Integer' then 'xs:integer' else if aType.e_typeName() = 'String' then 'xs:string' else if aType.e_typeName() = 'Real' then 'xs:double' else aType.e_typeName().concat('XsdType') endif endif endif endif/]
+
+[template public xsd_escapeXmlCharacter(s : String) post(self.trim())]
+  	[s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')/][/template]

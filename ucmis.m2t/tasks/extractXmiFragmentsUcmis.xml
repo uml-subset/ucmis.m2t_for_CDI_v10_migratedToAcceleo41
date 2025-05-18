@@ -1,0 +1,5 @@
+<project name="extractXmiFragments" default="transform">
+	<target name="transform">
+		<xslt style="xslt/ExtractClassifierUcmis.xslt" in="model/ucmis_canonical-unique-names-eclipse.xmi" out="generated/UCMISExample/doc/_rst/dummy"/>
+	</target>
+</project>

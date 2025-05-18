@@ -1,0 +1,5 @@
+<project name="preSphinx" default="preparation">
+	<target name="preparation">
+		<ant antfile="tasks/extractXmiFragmentsUcmis.xml"/>
+	</target>
+</project>

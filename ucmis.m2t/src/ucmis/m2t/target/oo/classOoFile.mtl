@@ -1,0 +1,81 @@
+[**
+ * The documentation of the module aClassFile.
+ */]
+[module classOoFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::oo::associationOo/]
+[import ucmis::m2t::target::oo::attributeOo/]
+[import ucmis::m2t::target::oo::textBlocksOo/]
+
+[comment encoding = UTF-8 /]
+[**
+ * Processes a class. Writes a file.
+ * @param aClass a class
+*/]
+[template public processClassOo(aClass : uml::Class)]
+  [file (aClass.e_filePath('oo').concat('.txt'), overwrite, 'UTF-8')]
+    [aClass.generationMessageOo()/]
+    Model: [aClass.current(uml::Model).name/]
+    Package: [aClass.current(uml::Package).name/]
+    Class [aClass.name/]:
+    
+    findSuperClassStack:
+    [for (superClass : uml::Class | aClass.e_allSuperclasses())]
+         * :ref:`[superClass.name/]`
+    [/for]
+    
+    [if (aClass.isAbstract)]
+      Class is abstract.
+    [/if]
+    [if (aClass.superClass->notEmpty())]
+      Generalization is :ref:`[aClass.superClass->asSequence()->collect(temp1 | temp1.name)/]`.
+    [/if]
+    
+    [if (aClass.e_allSuperclasses()->size() > 1)]
+      Superclass hierarchy
+      [for (superClass : uml::Class | aClass.e_allSuperclasses())]
+           * :ref:`[superClass.name/]`
+      [/for]
+    [/if]
+    
+    Documentation
+    [aClass.ownedComment->asSequence()->collect(temp2 | temp2.body)/]
+    
+    [if (aClass.e_attributes()->notEmpty())]
+      Attributes
+      [for (anAttribute : uml::Property | aClass.e_attributes())][anAttribute.processAttributeOo()/][/for][/if]
+    
+    [if (aClass.e_allSuperclasses()->notEmpty())]
+      Inherited Attributes
+      [for (superClass : uml::Class | aClass.e_allSuperclasses())][for (aProperty : uml::Property | superClass.e_attributes())][aProperty.processAttributeOo()/][/for][/for][/if]
+    
+    [if (aClass.e_associations()->notEmpty())]
+      Associations
+      [for (anAssociation : uml::Property | aClass.e_associations())][anAssociation.association.processAssociationOo()/][/for][/if]
+    
+    ################################
+    
+    aClass.eInverse()
+    [for (o : ecore::EObject | aClass.eInverse())]
+      Object: [o/]
+    [/for]
+    
+    aClass.eInverse(Class)
+    [for (c : uml::Class | aClass.eInverse(uml::Class))]
+      Object: [c.name/]
+    [/for]
+    
+    aClass.eInverse(Generalization)
+    [for (g : uml::Generalization | aClass.eInverse(uml::Generalization))]
+      Object: [g.general.name/]
+    [/for]
+    
+    aClass.eInverse(Property)->select(name <> null)
+    [for (p : uml::Property | aClass.eInverse(uml::Property)->select(temp3 | temp3.name <> null))]
+      Object: [p.name/]
+    [/for]
+    
+    
+  [/file]
+[/template]

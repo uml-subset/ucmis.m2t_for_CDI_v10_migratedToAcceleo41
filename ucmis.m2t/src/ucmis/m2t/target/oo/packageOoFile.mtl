@@ -1,0 +1,40 @@
+[**
+ * The documentation of the module aPackageFile.
+ */]
+[module packageOoFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::oo::classOoFile/]
+[import ucmis::m2t::target::oo::dataTypeOoFile/]
+[import ucmis::m2t::target::oo::textBlocksOo/]
+
+[comment encoding = UTF-8 /]
+[**
+ * Processes a package which has child packages. Writes a file.
+ * @param aPackage a package
+*/]
+[template public processPackageOo(aPackage : uml::Package) ? (aPackage.e_childrenPackages()->notEmpty())]
+  [file (aPackage.e_filePath('oo').concat('/index.txt'), overwrite, 'UTF-8')]
+    [aPackage.generationMessageOo()/]
+    [for (childPackage : uml::Package | aPackage.e_childrenPackages())]
+      Package [childPackage.name/]
+      [childPackage.processPackageOo()/][/for]
+  [/file]
+[/template]
+
+[**
+ * Process a package which has no child packages. Writes a file.
+ * @param aPackage a package
+*/]
+[template public processPackageOo(aPackage : uml::Package) ? (aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Agents')]
+  [file (aPackage.e_filePath('oo').concat('/index.txt'), overwrite, 'UTF-8')]
+    [aPackage.getModel().name.generationMessageOo()/]
+    [for (aClass : uml::Class | aPackage.e_childrenClasses())]
+      Class [aClass.name/]
+      [aClass.processClassOo()/][/for]
+    [for (aDataType : uml::DataType | aPackage.e_childrenDataTypes())]
+      Data type [aDataType.name/]
+      [aDataType.processDataTypeOo()/][/for]
+    
+  [/file]
+[/template]

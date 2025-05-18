@@ -1,0 +1,291 @@
+[**
+ * The documentation of the module textBlocks.
+ */]
+[module puDiagram('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::service::utilityServices/]
+[import ucmis::m2t::target::doc::puUtilityDoc/]
+[import ucmis::m2t::query::ucmisUtility/]
+
+[comment encoding = UTF-8 /]
+[comment][import ucmis::m2t::target::doc::rstUtilityDoc /][/comment]
+[**
+ * Creates a UML diagram for items in PlantUML code. Items are classes or data types.
+ * Different groups of items have certain colors.
+ * A convenient context diagram of an item can be displayed with mainItemsLinks=all, mainItemsAttributes=all,
+ * mainItemsInheritance=true, associationToSuperclasses=false, packageName=other, designPatterns=true,
+ * otherSpecifications=true.
+ * @param mainItems are items with main focus. Automatically all relationships between these elements are displayed,
+ * regardless of the values of the other parameters. mainItems have a certain color.
+ * @param mainItemsLinks specifies which links are displayed.
+ * Links are, in the case of classes, associations or, in the case of data types, their use.
+ * Associated classes are context classes if not specified as main item.
+ * Context classes have a certain color.
+ * Allowed values are:
+ * none (no links), own (only links of main items) or all (also links of super items).
+ * @param mainItemsAttributes specifies which attributes of main items are displayed. Allowed values are:
+ * none (no attributes of main items), own (only attributes of main items) or all
+ * (also attributes of their super items).
+ * @param mainItemsDataTypes specifies which related data types of main item attributes are displayed.
+ * Allowed values are: none (no related data types), own (only data types of attributes of main items) or all
+ * (also data types of attributes of their super items). mainItemsDataTypes have a certain color.
+ * @param mainItemsInheritance specifies if super items and sub items of main items are displayed.
+ * The inheritance arrows have a certain color.
+ * The subclasses and superclasses are context classes if not specified as main item.
+ * Context classes have a certain color.
+ * @param mainItemsMultiplicity specifies if the multiplicities of association ends (in case of classes) and
+ * main item attributes are displayed.
+ * @param mainItemsPackageName specifies which package names are displayed. Allowed values are:
+ * none (no package names), otherPackage (only package names of items which are in another package
+ * than the first item of mainItems) or all (package names of all items).
+ * @param otherItems is a set of items that are of secondary interest. Automatically all relationships
+ * between other items and main items are displayed. Other items have a certain color.
+ * @param associationToSuperclasses specifies whether associations to superclasses at the second level or
+ * above are displayed in parallel with the inheritance relationship.
+ * Background is that this can be too big a constraint for the graph rendering software Graphviz.
+ * @param designPatterns specifies if relationships to entities in design patterns are displayed.
+ * These entities have a certain color.
+ * @param otherSpecifications specifies if relationships to entitities of other specifications are displayed.
+ * These entities have a certain color.
+*/]
+[template public pu_diagramGenerator(mainItems : Sequence(uml::Classifier), mainItemsLinks : String, mainItemsAttributes : String, mainItemsDataTypes : String, mainItemsInheritance : Boolean, mainItemsMultiplicity : Boolean, packageName : String, associationToSuperclasses : Boolean, designPatterns : Boolean, otherSpecifications : Boolean, otherItems : Sequence(uml::Classifier)) ? (mainItems->first().oclIsTypeOf(uml::Class) and (otherItems->size() = 0 or otherItems->first().oclIsTypeOf(uml::Class)) or mainItems->first().oclIsKindOf(uml::DataType) and (otherItems->size() = 0 or otherItems->first().oclIsKindOf(uml::DataType)))]
+  
+  /'
+  pu_diagramGenerator parameter
+  
+  Main items: 				[for (aClassifier : uml::Classifier | mainItems)][aClassifier.name/][if (i < mainItems->size())], [/if][/for]
+    mainItemsLinks:			[mainItemsLinks/]
+    mainItemsAttributes:		[mainItemsAttributes/]
+    mainItemsDataTypes:		[mainItemsDataTypes/]
+    mainItemsInheritance:		[mainItemsInheritance/]
+    mainItemsMultiplicity:	[mainItemsMultiplicity/]
+  packageName:				[packageName/]
+  associationToSuperclasses:	[associationToSuperclasses/]
+  designPatterns:				[designPatterns/]
+  otherSpecifications:		[otherSpecifications/]
+  Other items: 				[for (aClassifier : uml::Classifier | otherItems)][aClassifier.name/][if (i < otherItems->size())], [/if][/for]
+  '/
+  
+  ' Definition of main items
+  [for (mainItem : uml::Classifier | mainItems)]
+    Superclass: [for (aSuperClassifier : uml::Classifier | mainItem.e_allSuperClassifiers())][aSuperClassifier.name/][if (i < mainItem.e_allSuperClassifiers()->size())], [/if][/for]
+    Subclass: [for (aSubClassifier : uml::Classifier | mainItem.e_subClassesOrSubDataTypes())][aSubClassifier.name/][if (i < mainItem.e_subClassesOrSubDataTypes()->size())], [/if][/for]
+    eInverse(Class): [for (anotherClass : uml::Class | mainItem.eInverse(uml::Class)->sortedBy(temp1 | temp1.name))][anotherClass.name/][if (i < mainItem.eInverse(uml::Class)->size())], [/if][/for]
+    eInverse(Generalization): [for (g : uml::Generalization | mainItem.eInverse(uml::Generalization)->select(temp2 | temp2.specific <> mainItem))][g.specific.oclAsType(uml::Classifier).name/], [/for]
+    eInverse(Generalization): [for (c : uml::Classifier | mainItem.eInverse(uml::Generalization)->select(temp3 | temp3.specific <> mainItem)->asSequence()->collect(temp4 | temp4.specific.oclAsType(uml::Classifier)))][c.name/], [/for]
+    eInverse(Generalization2):[for (c : uml::Classifier | mainItem.e_subClassesOrSubDataTypes2())][c.name/], [/for]
+    eInverse(DataType): [for (aDataType : uml::DataType | mainItem.eInverse(uml::DataType))][aDataType.name/][if (i < mainItem.eInverse(uml::DataType)->size())], [/if][/for]
+    eInverse(Association) : [for (anAssociation : uml::Association | mainItem.eInverse(uml::Association))][anAssociation.name/][if (i < mainItem.eInverse(uml::Association)->size())], [/if][/for]
+    associations without associations leading to superclasses. This would be too many constraints for Graphviz.
+    eInverse(Association)-: [for (anAssociation : uml::Association | mainItem.eInverse(uml::Association)->reject(a | mainItem.e_allSuperClassifiers()->includes(a.ownedEnd->first().type.oclAsType(uml::Classifier)) or mainItem.e_allSuperClassifiers()->includes(a.ownedEnd->first().getOtherEnd().type.oclAsType(uml::Classifier))))][anAssociation.name/][if (i < mainItem.eInverse(uml::Association)->size())], [/if][/for]
+    
+    
+    associated Classes: [for (anAssociatedClass : uml::Class | mainItem.eInverse(uml::Association)->asSequence()->collect(a | a.ownedEnd->first().type.oclAsType(uml::Class))->union(mainItem.eInverse(uml::Association)->asSequence()->collect(a | a.ownedEnd->first().getOtherEnd().type.oclAsType(uml::Class)))->asOrderedSet()->excluding(mainItem)->sortedBy(temp5 | temp5.name))][anAssociatedClass.name/], [/for]
+    associations: [for (anAssociation : uml::Association | mainItem.eInverse(uml::Association)->select(a | a.e_ownedEndClass() = mainItem or a.e_otherEndClass() = mainItem))][anAssociation.name/], [/for]
+    eInverse(Property): [for (aProperty : uml::Property | mainItem.eInverse(uml::Property)->select(temp7 | temp7.association = null))][aProperty.name/][if (i < mainItem.eInverse(uml::Property)->select(temp6 | temp6.association = null)->size())], [/if][/for]
+    eInverse(Property) v2 correct: [for (aProperty : uml::Property | mainItem.eInverse(uml::Property)->select(temp9 | temp9.association = null)->select(temp10 | temp10.owner = mainItem))][aProperty.name/][if (i < mainItem.eInverse(uml::Property)->select(temp8 | temp8.association = null)->size())], [/if][/for]
+    eInverse(Property) v2b other:  [for (aProperty : uml::Property | mainItem.eInverse(uml::Property)->select(temp12 | temp12.association = null)->select(temp13 | temp13.owner <> mainItem))][aProperty.owner.oclAsType(uml::Classifier).name/]::[aProperty.name/][if (i < mainItem.eInverse(uml::Property)->select(temp11 | temp11.association = null)->size())], [/if][/for]
+    eInverse(Property) v3        : [for (aProperty : uml::Property | mainItem.e_attributes())][aProperty.name/][if (i < mainItem.e_attributes()->size())], [/if][/for]
+    eInverse(Property) data type: [for (aProperty : uml::Property | mainItem.eInverse(uml::Property)->select(temp15 | temp15.association = null))][aProperty.type.e_typeName()/] [aProperty.type.namespace.name/][if (i < mainItem.eInverse(uml::Property)->select(temp14 | temp14.association = null)->size())], [/if][/for]
+    eInverse(Property) class:     [for (aProperty : uml::Property | mainItem.eInverse(uml::Property)->select(temp17 | temp17.association = null)->sortedBy(temp18 | temp18.owner.oclAsType(uml::Classifier).name))][aProperty.owner.oclAsType(uml::Classifier).name/][if (i < mainItem.eInverse(uml::Property)->select(temp16 | temp16.association = null)->size())], [/if][/for]
+    eInverse(Abstraction): [for (anAbstraction : uml::Abstraction | mainItem.eInverse(uml::Abstraction))][anAbstraction.name/][if (i < mainItem.eInverse(uml::Abstraction)->size())], [/if][/for]
+    eInverse(Comment): [for (aComment : uml::Comment | mainItem.eInverse(uml::Comment))][aComment.body/][if (i < mainItem.eInverse(uml::Comment)->size())], [/if][/for]
+    eInverse(Package): [for (aPackage : uml::Package | mainItem.eInverse(uml::Package))][aPackage.name/][if (i < mainItem.eInverse(uml::Package)->size())], [/if][/for]
+    eInverse(): [for (anOclAny : ecore::EObject | mainItem.eInverse())]
+                  [OrderedSet{anOclAny}->toString()/][if (i < mainItem.eInverse()->size())]
+                                                       ,
+                                                     [/if]
+                [/for]
+    
+    	mainItems					: Sequence(Classifier),
+    		mainItemsLinks			: String  = 'all',
+    		mainItemsAttributes		: String  = 'all',
+    		mainItemsDataTypes		: String  = 'none',
+    		mainItemsInheritance 	: Boolean = true,
+    		mainItemsMultiplicity 	: Boolean = true,
+    	packageName				 	: String  = 'otherPackage',
+    
+    
+    *********************
+    
+    
+    
+    *********************
+    
+    
+    [mainItem.pu_itemDefinition(mainItemsAttributes, mainItemsMultiplicity, packageName, mainItem.getProperty('diagram.mainItem.color'), mainItem.getProperty('diagram.mainItem.fontColor'))/]
+    [if (mainItemsInheritance)]
+      [if (mainItem.general->notEmpty())]
+        ' Super classes or data types
+        [mainItem.pu_superClassifier(mainItem, mainItemsAttributes, mainItemsMultiplicity, packageName)/]
+      [/if]
+      [if (mainItem.e_subClassesOrSubDataTypes2()->notEmpty())]
+        ' Sub classes or data types
+        [mainItem.pu_subClassifier(mainItemsAttributes, mainItemsMultiplicity, packageName)/]
+      [/if]
+    [/if]
+    [if (mainItemsLinks <> 'none')]
+      [if (mainItem.oclIsTypeOf(uml::Class))]
+        [mainItem.pu_linksItemDefinition(mainItem.oclAsType(uml::Class).e_associatedClasses(), mainItemsAttributes, mainItemsMultiplicity, packageName, mainItem.getProperty('diagram.mainItemContext.color'), mainItem.getProperty('diagram.mainItemContext.fontColor'), true)/]
+      [elseif (mainItem.oclIsTypeOf(uml::DataType))]
+        process data type links
+      [/if]
+    [/if]
+  [/for]
+  
+[/template]
+
+[template public pu_itemDefinition(item : uml::Classifier, attributes : String, multiplicity : Boolean, packageName : String, color : String, fontColor : String) post(self.e_removeEmptyLine())]
+  [if (item.oclIsKindOf(uml::DataType))]
+    ' Data type definition
+  [/if]
+  [if (item.isAbstract)]abstract [/if]class [item.qualifiedName/] as \
+    "<size:12>[if (packageName <> 'none')]<color:[fontColor/]>[item.package.name/]::[/if]\n<u><color:[fontColor/]><size:17>[item.name/]" \
+    [if (item.oclIsKindOf(uml::DataType))][item.oclAsType(uml::DataType).pu_dataTypeNotation()/] \[/if]
+    [item.pu_internalLink()/] \
+    [color/]
+  [if (attributes <> 'none' and item.e_attributes()->size() > 0)]
+      {
+    [for (anAttribute : uml::Property | item.e_attributes())]
+          <color:[fontColor/]>[anAttribute.name/] : [if (anAttribute.type.e_notPrimitive())]<u>[/if][anAttribute.type.e_typeName()/][if (multiplicity)]<plain> ['['/][anAttribute.e_multiplicity()/]][/if][if (anAttribute.type.e_notPrimitive())]
+                                                                                                                                                                                                             \
+                                                                                                                                                                                                                  [anAttribute.type.pu_internalLinkType()/][/if]
+      
+    [/for]
+      }[/if]
+[/template]
+
+[template public e_removeEmptyLine(txt : String)]
+  [txt.replaceAll('(\\r)?\\n\\h*(\\r)?\\n', '\n')/][/template]
+
+[**
+ * Returns an ordered set of associated classes, sorted by class name.
+ * @param aClass An object of type class.
+*/]
+[query public e_associatedClasses(aClass : uml::Class) : OrderedSet(uml::Class) = aClass.eInverse(uml::Association)->asSequence()->collect(a | a.e_ownedEndClass())->union(aClass.eInverse(uml::Association)->asSequence()->collect(a | a.e_otherEndClass()))->excluding(aClass)->asOrderedSet()->sortedBy(temp19 | temp19.name)/]
+
+[**
+ * Returns an ordered set of associated classes without the super class, sorted by class name.
+ * @param aClass An object of type association.
+*/]
+[comment OCL standard library sports a bug which changes *OrderedSets* in *Sets* when excluding elements. /]
+[query public e_associatedClassesWithoutSuperClass(aClass : uml::Class) : OrderedSet(uml::Class) = aClass.e_associatedClasses()->excluding(aClass.superClass)->asOrderedSet()/]
+
+[**
+ * Returns an ordered set of item (class or data type) attributes that use the specified data type, sorted by item name.
+*/]
+[query public e_using(aDataType : uml::DataType) : OrderedSet(uml::Property) = aDataType.eInverse(uml::Property)->select(temp20 | temp20.association = null)->select(temp21 | temp21.owner <> aDataType)->sortedBy(temp22 | temp22.owner.oclAsType(uml::Classifier).name)/]
+
+[**
+ * Returns an ordered set of classes that use the specified data type, sorted by class name.
+ * @param aClass An object of type DataType.
+*/]
+[query public e_classesUsing(aDataType : uml::DataType) : Sequence(uml::Class) = aDataType.e_using()->select(temp23 | temp23.owner.oclIsTypeOf(uml::Class))->asSequence()->collect(temp24 | temp24.owner)->collect(temp25 | temp25.oclAsType(uml::Class))/]
+
+[**
+ * Returns an ordered set of data types which use the specified data type, sorted by data type name.
+ * @param aClass An object of type DataType.
+*/]
+[query public e_dataTypesUsing(aDataType : uml::DataType) : Sequence(uml::DataType) = aDataType.e_using()->select(temp26 | temp26.owner.oclIsKindOf(uml::DataType))->asSequence()->collect(temp27 | temp27.owner)->collect(temp28 | temp28.oclAsType(uml::DataType))/]
+
+[**
+ * Defines associated classes (in Plantuml code) of the specified class.
+ * @param aClassifier An object of type Classifier, only Class is allowed.
+*/]
+[template public pu_linksItemDefinition(aClassifier : uml::Classifier, associatedClasses : OrderedSet(uml::Class), attributes : String, multiplicity : Boolean, packageName : String, color : String, fontColor : String, mainLevel : Boolean) ? (aClassifier.oclIsTypeOf(uml::Class))]
+  [let aClass : uml::Class = aClassifier.oclAsType(uml::Class)]
+    [if (associatedClasses->size() > 1)]
+      ' Definition of associated classes of class [aClassifier.name/]
+      [for (anAssociatedClass : uml::Class | associatedClasses)]
+          [anAssociatedClass.pu_itemDefinition(attributes, multiplicity, packageName, color, fontColor)/]
+      [/for]
+      ' Definition of associations of class [aClassifier.name/]
+      [let arrowType : String = if mainLevel then '--' else '-r-' endif]
+        [for (anAssociatedClass : uml::Class | associatedClasses)]
+          [for (anAssociation : uml::Association | anAssociatedClass.eInverse(uml::Association)->select(a | a.e_ownedEndClass() = aClass or a.e_otherEndClass() = aClass))]
+            [if (aClass <> anAssociation.e_ownedEndClass())]
+              [aClass.qualifiedName/] <[arrowType/][anAssociation.e_ownedEnd().aggregation.pu_aggregationKind()/] [anAssociation.e_ownedEndClass().qualifiedName/] \
+                [''.pu_link('     ' + anAssociation.ucmis_shortAssociationName() + ':\\n' + anAssociation.e_onlyDefinition())/] \
+                : [anAssociation.ucmis_shortAssociationName()/]
+            [elseif (aClass <> anAssociation.e_otherEndClass())]
+              [aClass.qualifiedName/] [anAssociation.e_otherEnd().aggregation.pu_aggregationKind()/][arrowType/]> [anAssociation.e_otherEndClass().qualifiedName/] \
+                [''.pu_link('     ' + anAssociation.ucmis_shortAssociationName() + ':\\n' + anAssociation.e_onlyDefinition())/] \
+                : [anAssociation.ucmis_shortAssociationName()/]
+            [/if]
+          [/for]
+        [/for]
+      [/let]
+    [/if]
+  [/let]
+[/template]
+
+[**
+ * Defines classes and data types (in Plantuml code) that use the specified data type.
+ * @param aClassifier An object of type Classifier, only DataType is allowed.
+*/]
+[template public pu_linksItemDefinition(aClassifier : uml::Classifier, attributes : String, multiplicity : Boolean, packageName : String, color : String, fontColor : String) ? (aClassifier.oclIsKindOf(uml::DataType))]
+  ' Definition of classes using the data type [aClassifier.name/]
+  together {
+  [for (aClass : uml::Class | aClassifier.oclAsType(uml::DataType).e_classesUsing())]
+      [aClass.pu_itemDefinition(attributes, multiplicity, packageName, aClass.getProperty('diagram.dataTypes.color'), aClass.getProperty('diagram.dataTypes.fontColor'))/]
+  [/for]
+  }
+  
+  ' Definition of data types using the data type [aClassifier.name/]
+  together {
+  [for (aDataType : uml::DataType | aClassifier.oclAsType(uml::DataType).e_dataTypesUsing())]
+      [aDataType.pu_itemDefinition(attributes, multiplicity, packageName, aDataType.getProperty('diagram.dataTypes.color'), aDataType.getProperty('diagram.dataTypes.fontColor'))/]
+  [/for]
+  }
+  ' Definition of using connections of the data type [aClassifier.name/]
+  [for (anAttribute : uml::Property | aClassifier.oclAsType(uml::DataType).e_using())]
+    [aClassifier.qualifiedName/] -['['/]dotted]- [anAttribute.qualifiedName/]
+  [/for]
+[/template]
+
+[template public pu_superClassifier(anItem : uml::Classifier, mainItem : uml::Classifier, attributes : String, multiplicity : Boolean, packageName : String)]
+  [for (aSuperItem : uml::Classifier | anItem.general)]
+    [if (aSuperItem.oclIsTypeOf(uml::Class))]
+      ' Definition of super item
+      [if (mainItem.oclAsType(uml::Class).e_associatedClasses()->excludes(aSuperItem))]
+        [aSuperItem.pu_itemDefinition(attributes, multiplicity, packageName, aSuperItem.getProperty('diagram.mainItemGeneral.color'), aSuperItem.getProperty('diagram.mainItemGeneral.fontColor'))/]
+      [/if]
+      ' Definition of generalization
+      [aSuperItem.qualifiedName/] <|-['['/][aSuperItem.getProperty('diagram.inheritancePath.color')/]]- [anItem.qualifiedName/]
+      [let associatedClasses : OrderedSet(uml::Class) = aSuperItem.oclAsType(uml::Class).e_associatedClasses()->excluding(anItem)->excluding(mainItem)->asOrderedSet()]
+        [let upper : Integer = if associatedClasses->size() > 3 then 3 else associatedClasses->size() endif]
+          [if (associatedClasses->size() > 0)]
+            [if (associatedClasses->size() > 3)]
+              note left of [aSuperItem.qualifiedName/] : Class has [associatedClasses->size()/] associations.\nOnly [upper/] are shown here.
+            [/if]
+            [aSuperItem.pu_linksItemDefinition(associatedClasses->subOrderedSet(1, upper), attributes, multiplicity, packageName, aSuperItem.getProperty('diagram.mainItemContext.color'), aSuperItem.getProperty('diagram.mainItemContext.fontColor'), false)/]
+          [/if]
+        [/let]
+      [/let]
+      [aSuperItem.pu_superClassifier(mainItem, attributes, multiplicity, packageName)/]
+    [/if]
+  [/for]
+[/template]
+
+[template public pu_subClassifier(aClassifier : uml::Classifier, attributes : String, multiplicity : Boolean, packageName : String) ? (aClassifier.oclIsTypeOf(uml::Class) or aClassifier.oclIsKindOf(uml::DataType))]
+  ' Sub classifiers
+  [for (subClassifier : uml::Classifier | aClassifier.e_subClassesOrSubDataTypes2())]
+    [subClassifier.pu_itemDefinition(attributes, multiplicity, packageName, subClassifier.getProperty('diagram.mainItemContext.color'), subClassifier.getProperty('diagram.mainItemContext.fontColor'))/]
+    [aClassifier.qualifiedName/] <|--['['/][subClassifier.getProperty('diagram.inheritancePath.color')/]]- [subClassifier.qualifiedName/] 
+    [if (aClassifier.e_subClassesOrSubDataTypes2()->notEmpty())]
+      [subClassifier.pu_subClassifier(attributes, multiplicity, packageName)/]
+    [/if]
+  [/for]
+[/template]
+
+[**
+ * Returns an ordered set of all subclasses of a class, sorted by class name.
+*/]
+[query public Xe_allSubclasses(aClass : uml::Class) : OrderedSet(uml::Class) = if aClass.e_subClasses()->notEmpty() then aClass.e_subClasses()->union(aClass.e_subClasses()->asSequence()->collect(temp29 | temp29.e_allSubclasses())->asSequence())->asOrderedSet() else OrderedSet{} endif/]
+
+[**
+ * Returns an ordered set of associations of a class sorted by the associated class name.
+ * @param aClass An object of type class.
+*/]
+[query public e_associations2(aClass : uml::Class) : OrderedSet(uml::Association) = aClass.eInverse(uml::Association)->sortedBy(temp30 | if temp30.e_ownedEndClass() <> aClass then temp30.e_ownedEndClass().name else temp30.e_otherEndClass().name endif)/]

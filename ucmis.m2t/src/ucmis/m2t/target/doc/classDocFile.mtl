@@ -1,0 +1,232 @@
+[**
+ * The documentation of the module aClassFile.
+ */]
+[module classDocFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::query::propertiesQuery/]
+[import ucmis::m2t::query::ucmisUtility/]
+[import ucmis::m2t::service::utilityServices/]
+[import ucmis::m2t::target::doc::associationDoc/]
+[import ucmis::m2t::target::doc::puDiagram/]
+[import ucmis::m2t::target::doc::puUtilityDoc/]
+[import ucmis::m2t::target::doc::rstUtilityDoc/]
+[import ucmis::m2t::target::jsonld::commonJsonld/]
+[import ucmis::m2t::target::jsonld::classJsonld/]
+[import ucmis::m2t::target::onto::classOnto/]
+[import ucmis::m2t::target::xsd::classXsd/]
+
+[comment encoding = UTF-8 /]
+[comment][import ucmis::m2t::target::doc::attributeDoc /][/comment]
+[**
+ * Processes a class. Writes a file.
+ * Processes all classes if includeAllItems is true in the first properties file (run configuration).
+ * Filters for subset classes if includeAllItems is false and subset.class is set in subset.properties file.
+ * @param aClass a class
+*/]
+[template public processClassDoc(aClass : uml::Class) ? (self.e_includeAllItems() or self.e_subsetAllClasses()->includes(aClass.name))]
+  [file (aClass.e_filePath('doc').concat('.rst'), overwrite, 'UTF-8')]
+    [aClass.rst_generationMessageDoc()/]
+    .. _[aClass.qualifiedName/]:
+    
+    [aClass.rst_className().rst_header('*')/]
+    
+    [if (aClass.qualifiedName.tokenize('::')->asOrderedSet()->intersection(aClass.getProperty('ddi-cdi_packages_ignore2').substituteAll(' ', '').tokenize(',')->asOrderedSet())->size() = 0)]
+      **Fully qualified [aClass.eClass().name.toLower()/] name**: [aClass.package.qualifiedName/]:::index:`[aClass.name/]`
+    [else]
+      **Fully qualified [aClass.eClass().name.toLower()/] name**: [aClass.qualifiedName/]
+    [/if]
+    [if (aClass.isAbstract)]| Class is abstract.[/if]
+    
+    [if (aClass.ownedComment->notEmpty())]
+      [aClass.e_fixClassDocumentation().replaceAll('(=\\s)', '$1\r').rst_addClassReferencesToDocumentation(aClass, aClass.getModel().e_allClasses())/]
+    [else]
+      *NO DOCUMENTATION AVAILABLE*
+    [/if]
+    
+    
+    [file (aClass.e_filePath('doc').concat('.pu'), overwrite, 'UTF-8')]
+      [aClass.pu_classDiagram(0)/]
+    [/file]
+    .. container::
+       :name: diagram
+    
+       .. dropdown:: Diagram
+          :open:
+    
+          .. uml:: [aClass.qualifiedName.replace(aClass.getModel().name, '').replaceAll('::', '/')/].pu
+    
+    [if (aClass.e_superClassifiers()->notEmpty() or aClass.e_subClassesOrSubDataTypes()->notEmpty())]
+      [aClass.rst_classOrDataTypeInheritance()/]
+    [/if]
+    
+    [if (aClass.e_attributes()->notEmpty() or aClass.e_inheritedAttributes()->notEmpty())]
+      .. container::
+         :name: attributes
+      
+         .. dropdown:: Attributes
+          
+            .. list-table::
+               :widths: 10 10 60 10 10 10
+               :header-rows: 1
+               :class: datatable-attributes
+          
+               * - Name
+                 - Inherited from
+                 - Description
+                 - Data Type
+                 - Multiplicity
+                 - Default value
+      [for (p : uml::Property | aClass.e_attributes())][p.rst_processAttributeInTable('         ', aClass)/][/for][for (c2 : uml::Classifier | aClass.e_superClassifiers())][for (p : uml::Property | c2.e_attributes())][p.rst_processAttributeInTable('         ', aClass)/][/for][/for][/if]
+    
+    [if (aClass.e_allSuperclasses()->union(OrderedSet{aClass}->asSequence())->collect(temp2 | temp2.eInverse(uml::Association))->size() > 0)]
+      .. container::
+         :name: associations
+      
+         .. dropdown:: Associations
+          
+            .. list-table::
+               :widths: 5 10 30 5 10 10 5 5 15
+               :header-rows: 1
+               :class: datatable-associations
+             
+               * - Direction
+                 - Association
+                 - Description
+                 - Multiplicity of [aClass.name/]
+                 - Package of Other Class
+                 - Other Class
+                 - Multiplicity of other class
+                 - Aggregation Kind
+                 - Inherited from
+      [for (c2 : uml::Class | aClass.e_allSuperclasses()->union(OrderedSet{aClass}->asSequence()))]
+        [for (anAssociation : uml::Association | c2.eInverse(uml::Association))]
+          [let source : uml::Property = anAssociation.ownedEnd->first()]
+            [let target : uml::Property = anAssociation.ownedEnd->first().getOtherEnd()]
+              [if (c2 <> target.type.oclAsType(uml::Class))]
+                         * - from
+              [else]
+                         * - to
+              [/if]
+                         - [anAssociation.name.replaceAll('_', ' ')/]
+                         - [anAssociation.ownedComment->asSequence()->collect(temp1 | temp1.body)/]
+              [if (c2 <> target.type.oclAsType(uml::Class))]
+                           - [source.e_multiplicity()/]
+                           - [if (aClass.package <> target.type.package)]:ref:`[target.type.package.qualifiedName/]`[else]\- *own package* \-[/if]
+                           - :ref:`[target.type.qualifiedName/]`
+                           - [target.e_multiplicity()/]
+                           - [target.aggregation.toString()/]
+              [else]
+                           - [target.e_multiplicity()/]
+                           - [if (aClass.package <> source.type.package)]:ref:`[source.type.package.qualifiedName/]`[else]\- *own package* \-[/if]
+                           - :ref:`[source.type.qualifiedName/]`
+                           - [source.e_multiplicity()/]
+                           - [source.aggregation.toString()/]
+              [/if]
+                         - [if (c2 = aClass)]\- *own class* \-[else][c2.rst_simpleQualifiedClassNameReference()/][/if]
+            [/let]
+          [/let]
+        [/for]
+      [/for]
+    [/if]
+    
+    [if (aClass.qualifiedName.tokenize('::')->asOrderedSet()->intersection(aClass.getProperty('ddi-cdi_packages_ignore2').substituteAll(' ', '').tokenize(',')->asOrderedSet())->size() = 0)]
+      .. container::
+         :name: encodings
+      
+         .. dropdown:: Syntax representations / encodings
+          
+            All syntax representations except the Canonical XMI are provided as reference points
+            for specific implementations, or for use as defaults if sufficient in the form presented.
+          
+            .. tab-set::
+          
+               .. tab-item:: Canonical XMI
+                  :class-content: encoding
+          
+                  Fragment for the class **[aClass.name/]** (`entire model as XMI <[aClass.getProperty('DDI-CDI_XMI_URI')/]>`_)
+          
+                  .. literalinclude:: /xmi/[aClass.name/].xmi
+                     :lines: 2-
+                     :language: xml
+                     :linenos:
+                     :emphasize-lines: 4
+      
+      [if (aClass.getProperty('xsd').equalsIgnoreCase('true'))]
+                 .. tab-item:: XML Schema
+                    :class-content: encoding
+        [file (aClass.e_filePath('doc').concat('_xsd.txt'), overwrite, 'UTF-8')]
+          [aClass.classXsd()/]
+        [/file]
+        
+                    Fragment for the class **[aClass.name/]** (`entire XML Schema <[aClass.getProperty('DDI-CDI_XSD_URI')/]>`_)
+            
+                    .. literalinclude:: [aClass.qualifiedName.replace(aClass.getModel().name, '').replaceAll('::', '/')/]_xsd.txt 
+                       :language: xml
+                       :linenos:
+                       :emphasize-lines: 1
+                       :dedent: 2
+      [/if]
+      
+      [if (aClass.getProperty('jsonschema').equalsIgnoreCase('true'))]
+                 .. tab-item:: JSON Schema
+                    :class-content: encoding
+        
+                    `JSON Schema </encoding/json-schema/ddi-cdi.schema.json>`_
+      [/if]
+      
+      [if (aClass.getProperty('onto').equalsIgnoreCase('true'))]
+                 .. tab-item:: Ontology (Turtle)
+                    :class-content: encoding
+        [file (aClass.e_filePath('doc').concat('.onto.ttl'), overwrite, 'UTF-8')]
+          [aClass.classOnto()/]
+        [/file]
+        
+                    Fragment for the class **[aClass.name/]** (`main ontology <[aClass.getProperty('DDI-CDI_ONTO_URI')/]>`_)
+            
+                    .. literalinclude:: [aClass.qualifiedName.replace(aClass.getModel().name, '').replaceAll('::', '/')/].onto.ttl 
+                       :language: turtle
+                       :linenos:
+                       :emphasize-lines: 3
+      [/if]
+      
+      [if (aClass.getProperty('jsonld').equalsIgnoreCase('true'))]
+                 .. tab-item:: JSON-LD
+                    :class-content: encoding
+        [file (aClass.e_filePath('doc').concat('.jsonld'), overwrite, 'UTF-8')]
+          [aClass.classJsonldModular()/]
+        [/file]
+        
+                    Fragment for the class **[aClass.name/]** (`main JSON-LD <[aClass.getProperty('DDI-CDI_JSONLD_URI')/]>`_)
+            
+                    .. literalinclude:: [aClass.qualifiedName.replace(aClass.getModel().name, '').replaceAll('::', '/')/].jsonld 
+                       :language: JSON-LD
+                       :linenos:
+                       :emphasize-lines: 5
+      [/if]
+      
+      [if (aClass.getProperty('shacl').equalsIgnoreCase('true'))]
+                 .. tab-item:: SHACL
+                    :class-content: encoding
+        
+                    `SHACL - Shapes Constraint Language </encoding/shacl/ddi-cdi.shacl.ttl>`_
+      [/if]
+      
+      [if (aClass.getProperty('shex').equalsIgnoreCase('true'))]
+                 .. tab-item:: ShEx
+                    :class-content: encoding
+        
+                    `ShEx - Shape Expressions </encoding/shex/ddi-cdi.shexc>`_
+      [/if]
+    [/if]
+  [/file]
+[/template]
+
+[template public subClasses(aClass : uml::Class, indent : String)]
+  [for (c : uml::Class | aClass.e_subClasses())]
+       [if (c.isAbstract)].. cssclass:: abstract[else].. cssclass:: regular[/if]
+    
+          | [indent/]ᐊ── [c.rst_simpleQualifiedClassNameReference()/]
+    
+    [if (c.e_subClasses()->notEmpty())][c.subClasses(indent.concat('|_| '))/][/if][/for]
+[/template]

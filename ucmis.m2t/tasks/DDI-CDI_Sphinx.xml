@@ -1,0 +1,14 @@
+<project name="DDI-CDI_Sphinx" default="sphinx">
+	<target name="sphinx">
+		<exec executable="sphinx-build">
+			<arg line="-b html"/>
+			<arg line="-c sphinx/default"/>
+			<arg line="-D copyright=&quot;2022, DDI Alliance&quot;"/>
+			<arg line="-D html_logo=&quot;./_static/images/CDIDraftLogo.jpg&quot;"/>
+<!--			<arg line="-D html_logo=&quot;./_static/images/DDI-tagline2_0.svg&quot;"/> -->
+			<arg line="-D html_title=&quot;UML Model: DDI Cross Domain Integration (DDI-CDI 1.0)&quot;"/>
+			<arg line="generated/DDI-CDI_1-0/doc/_rst"/>
+			<arg line="generated/DDI-CDI_1-0/doc/_build"/>
+		</exec>
+	</target>
+</project>

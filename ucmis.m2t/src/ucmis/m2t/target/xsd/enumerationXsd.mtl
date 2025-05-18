@@ -1,0 +1,30 @@
+[**
+ * Module for generating XML Schema.
+ */]
+[module enumerationXsd('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::xsd::commonXsd/]
+
+[comment encoding = UTF-8 /]
+[**
+ * Generates XML Schema code for an enumeration.
+ * @param anEnumeration
+*/]
+[template public enumerationXsd(anEnumeration : uml::Enumeration)]
+    <xs:simpleType name="[anEnumeration.name.concat('XsdType')/]"
+                   xml:id="[anEnumeration.name.concat('XsdType')/]">
+      <!-- based on the UML enumeration [anEnumeration.qualifiedName/] -->
+      <xs:annotation>
+        <xs:documentation>[anEnumeration.e_fixClassDocumentation().xsd_escapeXmlCharacter()/]</xs:documentation>
+      </xs:annotation>
+      <xs:restriction base="xs:NMTOKEN">
+  [for (aLiteral : uml::EnumerationLiteral | anEnumeration.ownedLiteral)]
+          <xs:enumeration value="[aLiteral.name/]">
+            <xs:annotation>
+              <xs:documentation>[aLiteral.ownedComment->asSequence()->collect(temp1 | temp1.body)->collect(temp2 | temp2.trim())->collect(temp3 | temp3.xsd_escapeXmlCharacter())/]</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+  [/for]
+      </xs:restriction>
+    </xs:simpleType>[/template]

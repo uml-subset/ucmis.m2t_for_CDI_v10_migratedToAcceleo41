@@ -1,0 +1,7 @@
+<project name="copyAboutFiles" default="copy">
+	<target name="copy">
+		<copy todir="generated/DDI-CDI_1-0/doc/_rst/about">
+			<fileset dir="about"/>
+		</copy>
+	</target>
+</project>

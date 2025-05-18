@@ -1,0 +1,12 @@
+[module associationShex('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::rdf::commonRdf/]
+[import ucmis::m2t::service::utilityServices/]
+[import ucmis::m2t::target::shex::commonShex/]
+
+[comment encoding = UTF-8 /]
+[template public associationShex(anAssociation : uml::Association, aClass : uml::Class)]
+  [if (anAssociation.source() = aClass)]
+    [anAssociation.iri()/]	@[anAssociation.target().iri()/]Shape [anAssociation.e_otherEndClass().subClasses()/][anAssociation.e_otherEnd().getCardinality()/];
+  [else]^[anAssociation.iri()/] @[anAssociation.source().iri()/]Shape [anAssociation.e_ownedEndClass().subClasses()/][anAssociation.e_ownedEnd().getCardinality()/];[/if][/template]

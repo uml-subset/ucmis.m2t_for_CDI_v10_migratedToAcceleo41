@@ -1,0 +1,10 @@
+<project name="xsd_removeSuffixXsdTypeInName" default="transform" basedir="generated/DDI-CDI_1-0/encoding/xml-schema">
+	<property name="xsdDir" value="generated/DDI-CDI_1-0/encoding/xml-schema"/>
+	<target name="transform">
+		<xslt style="xslt/xsd_removeSuffixXsdTypeInName.xslt"
+			  in="${xsdDir}/ddi-cdi.xsd"
+			  out="${xsdDir}/ddi-cdi_noXsdTypeInName.xsd">
+			<classpath location="C:/Programs/SaxonHE10-6J/saxon-he-10.6.jar"/>
+		</xslt>
+	</target>
+</project>

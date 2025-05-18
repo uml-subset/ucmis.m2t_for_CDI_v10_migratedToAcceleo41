@@ -1,0 +1,19 @@
+<project name="zipRdfEncodings" default="provide">
+	<property name="root" location="generated"/>
+	<property name="encoding" location="generated/DDI-CDI_1-0/encoding"/>
+	<target name="provide">
+		<move file="${encoding}/ontology/DDICDIModels.onto.ttl" tofile="${encoding}/ontology/ddi-cdi.onto.ttl" failonerror="false"/>
+		<!--
+		<move file="${encoding}/onto" tofile="${encoding}/ontology" failonerror="false"/>
+		<move file="${encoding}/jsonld" tofile="${encoding}/json-ld" failonerror="false"/>
+		<zip	basedir="${root}"
+				destfile="${encoding}/onto/DDI-CDI_1-0.onto.ttl.zip"
+				includes="DDI-CDI_1-0/encoding/onto/*"/>
+		<zip	basedir="${root}"
+				destfile="${encoding}/jsonld/DDI-CDI_1-0.jsonld.zip"
+				includes="DDI-CDI_1-0/encoding/jsonld/*"/>
+		<mkdir dir="${encoding}/xmi"/>
+		<copy file="E:/Git/ddi-cdi/build/model/ddi-cdi_canonical-unique-names.xmi" todir="${encoding}/xmi"/>
+		-->
+	</target>
+</project>

@@ -1,0 +1,19 @@
+[**
+ * The documentation of the module aDataTypeFile.
+ */]
+[module dataTypeOoFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::oo::textBlocksOo/]
+
+[comment encoding = UTF-8 /]
+[**
+ * The documentation of the template processDataType.
+ * @param aDataType - a data type
+*/]
+[template public processDataTypeOo(aDataType : uml::DataType)]
+  [file (aDataType.e_filePath('oo').concat('.txt'), overwrite, 'UTF-8')]
+    [aDataType.generationMessageOo()/]
+    Data type [aDataType.name/]
+  [/file]
+[/template]

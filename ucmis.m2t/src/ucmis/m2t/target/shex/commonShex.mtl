@@ -1,0 +1,28 @@
+[module commonShex('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::rdf::commonRdf/]
+[import ucmis::m2t::service::utilityServices/]
+
+[comment encoding = UTF-8 /]
+[template public attributeShex(anAttribute : uml::Property)]
+  [anAttribute.iri()/]	[if (anAttribute.type.oclIsTypeOf(uml::PrimitiveType))][anAttribute.type.iri()/][else]@[anAttribute.type.iri()/]Shape[/if][anAttribute.getCardinality()/];[/template]
+
+[template public superClasses(aClass : uml::Class)]
+  [let scs : OrderedSet(uml::Class) = aClass.superClass]
+    [if (scs->notEmpty())]
+      	[scs->asSequence()->collect(sc | sc.iri().prefix('&').concat('Properties'))->sep(', ')/];
+    [/if]
+  [/let]
+[/template]
+
+[template public pac_superDataTypes(aDataType : uml::DataType)]
+  [let scs : OrderedSet(uml::Classifier) = aDataType.general]
+    [if (scs->notEmpty())]
+      	[scs->asSequence()->collect(sc | sc.iri().prefix('&').concat('Properties'))->sep(', ')/];
+    [/if]
+  [/let]
+[/template]
+
+[template public subClasses(aClass : uml::Class)]
+  [let scs : OrderedSet(uml::Class) = aClass.e_subClasses()][if (scs->notEmpty())][scs->asSequence()->collect(sc | sc.iri().prefix('OR @').concat('Shape'))->sep(' ')/][/if][/let][/template]

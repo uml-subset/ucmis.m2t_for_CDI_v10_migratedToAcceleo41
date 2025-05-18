@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ucmis.m2t" default="generate">
+	<property name="MODEL" value="E:/Git/ucmis.m2t/model/ddi-cdi_canonical-unique-names-eclipse.xmi"/>
+	<property name="OUTPUT_DIR" value="E:/test"/>
+	<target name="generate">
+		<java classname="ucmis.m2t.main.M2tMaster">
+			<arg value="${MODEL}"/>
+			<arg value="${OUTPUT_DIR}"/>
+			<arg value="E:/Git/ucmis.m2t/src/ucmis/m2t/property/ddicdi.properties"/>
+			<classpath>
+				<pathelement location="E:/Git/ucmis.m2t/bin"/>
+				<!--
+				<pathelement location="E:/Git/ucmis.m2t/bin/ucmis/m2t/main/M2tMaster.class"/>
+				<dirset dir="E:/Git/ucmis.m2t/bin">
+					<include name="**/*.class"/>
+				</dirset>
+				-->
+				<fileset dir="C:/Users/Joachim Wackerow/.p2/pool/plugins">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	<target name="generate2">
+		<java classname="ucmis.m2t.main.M2tMaster">
+			<arg value="${MODEL}"/>
+			<arg value="${OUTPUT_DIR}"/>
+			<arg value="E:/Git/ucmis.m2t/src/ucmis/m2t/property/ddicdi.properties"/>
+			<classpath>
+				<pathelement location="E:/Git/ucmis.m2t/bin"/>
+				<!--
+				<pathelement location="E:/Git/ucmis.m2t/bin/ucmis/m2t/main/M2tMaster.class"/>
+				<dirset dir="E:/Git/ucmis.m2t/bin">
+					<include name="**/*.class"/>
+				</dirset>
+				-->
+				<fileset dir="E:/test/lib">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	<target name="package">
+		<jar destfile="E:/test/m2t.jar">
+			<fileset dir="E:/Git/ucmis.m2t/bin"/>
+			<archives>
+				<zips>
+					<fileset dir="C:/Users/Joachim Wackerow/.p2/pool/plugins" includes="**/*.jar"/>
+				</zips>
+			</archives>
+			<!--
+			<fileset dir="C:/Users/Joachim Wackerow/.p2/pool/plugins">
+				<include name="**/*.jar"/>
+			</fileset>
+			<fileset dir="build/main/classes"/>
+			<zipfileset includes="**/*.class" src="lib/main/some.jar"/>
+			-->
+			<manifest>
+				<attribute name="Main-Class" value="ucmis.m2t.main.M2tMaster"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="package2">
+		<jar destfile="E:/test/m2tok.jar">
+			<fileset dir="E:/Git/ucmis.m2t/bin"/>
+			<archives>
+				<zips>
+					<fileset dir="E:/test/lib" includes="**/*.jar"/>
+				</zips>
+			</archives>
+			<!--
+			<fileset dir="C:/Users/Joachim Wackerow/.p2/pool/plugins">
+				<include name="**/*.jar"/>
+			</fileset>
+			<fileset dir="build/main/classes"/>
+			<zipfileset includes="**/*.class" src="lib/main/some.jar"/>
+			-->
+			<manifest>
+				<attribute name="Main-Class" value="ucmis.m2t.main.M2tMaster"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="package3">
+		<jar destfile="E:/test/m2tok2.jar">
+			<fileset dir="E:/Git/ucmis.m2t/bin"/>
+			<manifest>
+				<attribute name="Main-Class" value="ucmis.m2t.main.M2tMaster"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="run">
+		<java jar="E:/test/m2tok2.jar" fork="true">
+			<arg value="${MODEL}"/>
+			<arg value="${OUTPUT_DIR}"/>
+			<arg value="E:/Git/ucmis.m2t/src/ucmis/m2t/property/ddicdi.properties"/>
+			<classpath>
+				<fileset dir="E:/test/lib">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	<target name="run3">
+		<java jar="E:/test/m2tok2.jar" fork="true">
+			<arg value="${MODEL}"/>
+			<arg value="${OUTPUT_DIR}"/>
+			<arg value="E:/Git/ucmis.m2t/src/ucmis/m2t/property/ddicdi.properties"/>
+			<classpath>
+				<fileset dir="C:/Users/Joachim Wackerow/.p2/pool/plugins">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	<target name="run4">
+		<java jar="E:/test/m2tok2.jar" fork="true">
+			<arg value="${MODEL}"/>
+			<arg value="${OUTPUT_DIR}"/>
+			<arg value="E:/Git/ucmis.m2t/src/ucmis/m2t/property/ddicdi.properties"/>
+			<classpath>
+				<fileset dir="E:/test/m2tv2">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	<target name="run2">
+		<java jar="E:/test/m2tv2.jar" fork="true">
+			<arg value="${MODEL}"/>
+			<arg value="${OUTPUT_DIR}"/>
+			<arg value="E:/Git/ucmis.m2t/src/ucmis/m2t/property/ddicdi.properties"/>
+		</java>
+	</target>
+</project>

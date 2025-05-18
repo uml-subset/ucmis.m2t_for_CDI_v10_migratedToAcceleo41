@@ -1,0 +1,72 @@
+[**
+ * The documentation of the module anAssociation.
+ */]
+[module associationJson('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+
+[comment encoding = UTF-8 /]
+[**
+ * Processes an association.
+ * @param anAssociation - an association
+*/]
+[comment ssue: json has trailing commas. workaround: process it with https://jsonformatter.curiousconcept.com//]
+[template public createAssociationJsonFile(aModel : uml::Model)]
+  [file (aModel.e_filePath('doc').concat('/association.json'), overwrite, 'UTF-8')]
+    [let allClasses : Sequence(uml::Class) = aModel.e_allClasses()->select(c | c.qualifiedName.contains('DDICDILibrary'))]
+      [let nClassesTotal : Integer = allClasses->size()]
+        ['['/]
+        [for (aClass : uml::Class | allClasses)]
+              [aClass.classJson()/][if (i <> nClassesTotal)],[/if]
+        [/for]
+      [/let]
+    [/let]
+    ]
+  [/file]
+[/template]
+
+[template public classJson(aClass : uml::Class)]
+  {
+  [let classList : Sequence(uml::Class) = aClass.e_allSuperclasses()->union(OrderedSet{aClass}->asSequence())]
+    [let nAssociations : Integer = classList->collect(temp4 | temp4.e_associations())->size()]
+          "name": "[aClass.nodeName()/]"[if (nAssociations > 0)]
+                                          ,
+                                              "imports": ['['/]
+                                          [for (anAssociationProperty : uml::Property | classList->collect(temp1 | temp1.e_associations())->select(temp2 | temp2.association.ownedEnd->first().getOtherEnd().type.oclAsType(uml::Class) <> aClass)->sortedBy(temp3 | temp3.association.ownedEnd->first().getOtherEnd().type.oclAsType(uml::Class).name))]
+                                                    [anAssociationProperty.association.associationJson()/]
+                                          [/for]
+                                              ][/if]
+      
+    [/let]
+  [/let]
+  }[/template]
+
+[template public associationJson(anAssociation : uml::Association)]
+  [let targetClass : uml::Class = anAssociation.ownedEnd->first().getOtherEnd().type.oclAsType(uml::Class)]
+    "[targetClass.nodeName()/]",
+    [for (aClass : uml::Class | targetClass.e_allSubclasses())]
+      "[aClass.nodeName()/]",
+    [/for]
+  [/let]
+[/template]
+
+[comment]
+"[anAssociation.ownedEnd->first().getOtherEnd().type.oclAsType(Class).qualifiedName.replaceAll('::', '.')/]"
+
+Assocation name [anAssociation.name/]
+source: [anAssociation.ownedEnd->first().type.name/]
+[/comment]
+[comment]"[anAssociation.ownedEnd->first().getOtherEnd().type.oclAsType(Class).e_simpleQualifiedClassifierName()/]"[/comment]
+[template public nodeName(aClass : uml::Class)]
+  [aClass.package.qualifiedName.replaceAll('::', '.')/].[aClass.package.name/]::[aClass.name/][/template]
+
+[template public XsubClassJson(aClass : uml::Class)]
+  [for (subClass : uml::Class | aClass.e_subClasses())]
+    subClass: "[subClass.qualifiedName.replaceAll('::', '.')/]"
+    [subClass.XsubClassJson()/]
+  [/for]
+[/template]
+
+[query public XsubClasses(aClass : uml::Class) : OrderedSet(uml::Class) = aClass.eInverse(uml::Generalization)->select(temp5 | temp5.specific <> aClass)->asSequence()->collect(temp6 | temp6.specific.oclAsType(uml::Class))->asOrderedSet()->sortedBy(temp7 | temp7.name)/]
+
+[comment    ->collect(aClass.subClasses())/]

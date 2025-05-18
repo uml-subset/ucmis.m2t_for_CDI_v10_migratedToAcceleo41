@@ -1,0 +1,12 @@
+<project name="preSphinx" default="preparation">
+	<target name="preparation">
+		<ant antfile="tasks/copyAboutFiles.xml"/>
+		<ant antfile="tasks/copyDefinitionJs.xml"/>
+		<ant antfile="tasks/copyXmlXsd.xml"/>
+		<ant antfile="tasks/extractXmiFragments.xml"/>
+        <ant antfile="tasks/provideEncodingFiles.xml"/>
+		<!--
+        <ant antfile="tasks/xsd_removeSuffixXsdTypeInName.xml"/>
+        -->
+	</target>
+</project>

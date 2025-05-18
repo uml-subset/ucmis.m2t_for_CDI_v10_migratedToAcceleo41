@@ -1,0 +1,71 @@
+[**
+ * The documentation of the module packageDocFile.
+ */]
+[module packageDocFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::query::propertiesQuery/]
+[import ucmis::m2t::target::doc::classDocFile/]
+[import ucmis::m2t::target::doc::dataTypeDocFile/]
+[import ucmis::m2t::target::doc::enumerationDocFile/]
+[import ucmis::m2t::target::doc::rstUtilityDoc/]
+
+[comment encoding = UTF-8 /]
+[**
+ * Process a package. Write a file.
+ * @param aPackage a package
+*/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Agents' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Conceptual' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'DataDescription' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'FormatDescription' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Identification' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Miscellaneous' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Process' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() and aPackage.name = 'Representations' ) ]/]
+[comment template public processPackageDoc( aPackage : Package ) ?
+	( aPackage.e_childrenPackages()->isEmpty() ) ]/]
+[template public processPackageDoc(aPackage : uml::Package) ? (self.e_includeAllItems() or self.getModel().e_subsetPackages()->includes(aPackage.name))]
+  [file (aPackage.e_filePath('doc').concat('/index.rst'), overwrite, 'UTF-8')]
+    [aPackage.rst_generationMessageDoc()/]
+    .. _[aPackage.qualifiedName/]:
+    
+    [aPackage.name.rst_header('*')/]
+    
+    | **Fully qualified [aPackage.eClass().name.toLower()/] name**: [aPackage.getQualifiedName()/]
+    
+    [if (aPackage.ownedComment->notEmpty())]
+      [aPackage.e_fixClassDocumentation().replaceAll('(=\\s)', '$1\r')/]
+    [else]
+      *NO DOCUMENTATION AVAILABLE*
+    [/if]
+    
+    -----
+    
+    .. toctree::
+       :titlesonly:
+    
+    [for (childPackage : uml::Package | aPackage.e_childrenPackages()->select(p | aPackage.e_includeAllItems() or aPackage.getModel().e_subsetPackages()->includes(p.name)))]
+         [childPackage.name.concat('/index.rst')/]
+      [childPackage.processPackageDoc()/][/for]
+    [for (aClass : uml::Class | aPackage.e_childrenClasses()->select(c | aPackage.e_includeAllItems() or aPackage.e_subsetAllClasses()->includes(c.name)))]
+         [aClass.name.concat('.rst')/]
+      [aClass.processClassDoc()/][/for]
+    [for (aDataType : uml::DataType | aPackage.e_childrenDataTypes()->select(d | aPackage.e_includeAllItems() or aPackage.e_subsetDataTypes()->includes(d.name))->select(aDataType | not aDataType.oclIsTypeOf(uml::Enumeration)))]
+         [aDataType.name.concat('.rst')/]
+      [aDataType.processDataTypeDoc()/][/for]
+    [for (anEnumeration : uml::Enumeration | aPackage.e_childrenEnumeration()->select(e | aPackage.e_includeAllItems() or aPackage.e_subsetEnumerations()->includes(e.name)))]
+         [anEnumeration.name.concat('.rst')/]
+      [anEnumeration.processEnumerationDoc()/][/for]
+  [/file]
+[/template]

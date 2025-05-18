@@ -1,0 +1,8 @@
+Main contributor: Joachim Wackerow, joachim.wackerow@posteo.de
+
+Many ideas and concepts originate from earlier work on the DDI Moving Forward development platform.
+Special thanks to Olof Olsson and Oliver Hopt.
+
+XML Schema representation: Arofan Gregory, Oliver Hopt, Joachim Wackerow
+RDF representations (ontology in Turtle, JSON-LD, SHACL): Pierre-Antoine Champin
+ShEx representation: Pierre-Antoine Champin, Deirdre Lungley

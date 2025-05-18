@@ -1,0 +1,5 @@
+<project name="copyDefinitionJs" default="copy">
+	<target name="copy">
+		<copy file="generated/DDI-CDI_1-0/doc/_rst/definition.js" todir="sphinx/default/_static"/>
+	</target>
+</project>

@@ -1,0 +1,60 @@
+<!-- <project name="emtl2rst" default="create-rst" basedir="E:/Git/ucmis.m2t"> for running without Eclipse -->
+<project name="emtl2rst" default="create-index">
+	<!-- for antcontrib foreach -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
+	<property name="destDir" value="generated/ucmis.m2t/_rst"/>
+	<target name="create-rst">
+		<xslt style="xslt/emtl2rst.xslt" basedir="bin/ucmis/m2t" includes="**/*.emtl" destdir="${destDir}" extension=".rst"/>
+		<!--
+		see: https://www.abbeyworkshop.com/howto/xslt/ant-saxon/
+			<classpath location="C:/Programs/SaxonHE10-6J/saxon-he-10.6.jar"/> in xslt section
+		Not necessary now because jar file is added via launch classpath, add external jar
+		-->
+	</target>
+	<target name="create-index" depends="create-rst">
+		<!--
+		include ant-contrib-1.0b3.jar in Eclipse:
+			Window>Preferences>Ant>Runtime>Classpath
+			Add the JAR to either Ant Home Entries or Global Entries
+			see: https://www.eclipse.org/forums/index.php/t/87209/
+		-->
+		<foreach target="WriteIndex" param="dir">
+			<path>
+				<dirset dir="${destDir}"/>
+			</path>
+		</foreach>
+	</target>
+	<target name="WriteIndex">
+		<basename property="dirBasename" file="${dir}"/>
+		<echo message="${dirBasename}${line.separator}" file="${dir}/index.rst"/>
+		<echo message="########################################" file="${dir}/index.rst" append="true"/>
+		<echo message="${line.separator}${line.separator}" file="${dir}/index.rst" append="true"/>
+		<echo message=".. toctree::" file="${dir}/index.rst" append="true"/>
+		<echo message="${line.separator}${line.separator}" file="${dir}/index.rst" append="true"/>
+		<foreach target="WriteDirEntry" param="subdir">
+			<path>
+				<dirset dir="${dir}">
+					<include name="*"/>
+				</dirset>
+			</path>
+		</foreach>
+		<foreach target="WriteFileEntry" param="file">
+			<path>
+				<fileset dir="${dir}">
+					<include name="*"/>
+					<exclude name="index.rst"/>
+				</fileset>
+			</path>
+		</foreach>
+	</target>
+	<target name="WriteDirEntry">
+		<basename property="subdirBasename" file="${subdir}"/>
+		<echo message="   ${subdirBasename}/index.rst" file="${dir}/index.rst" append="true"/>
+		<echo message="${line.separator}" file="${dir}/index.rst" append="true"/>
+	</target>
+	<target name="WriteFileEntry">
+		<basename property="fileBasename" file="${file}"/>
+		<echo message="   ${fileBasename}" file="${dir}/index.rst" append="true"/>
+		<echo message="${line.separator}" file="${dir}/index.rst" append="true"/>
+	</target>
+</project>

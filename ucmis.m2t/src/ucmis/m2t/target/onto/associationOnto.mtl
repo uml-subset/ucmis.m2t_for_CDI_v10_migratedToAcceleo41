@@ -1,0 +1,17 @@
+[module associationOnto('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::rdf::commonRdf/]
+
+[comment encoding = UTF-8 /]
+[template public associationOnto(anAssociation : uml::Association, aClass : uml::Class)]
+  [anAssociation.iri()/]
+    a rdf:Property, owl:ObjectProperty, ucmis:Association;
+    # ASSOCIATION
+    rdfs:label "[anAssociation.shortName()/]";
+    skos:altLabel "[anAssociation.name/]";
+    [anAssociation.ownedComment.rdfs_comment()/]
+    rdfs:domain [aClass.iri()/];
+    rdfs:range [anAssociation.target().iri()/];
+  .
+[/template]

@@ -1,0 +1,26 @@
+[module classOnto('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::target::rdf::commonRdf/]
+[import ucmis::m2t::target::onto::associationOnto/]
+[import ucmis::m2t::target::onto::commonOnto/]
+
+[comment encoding = UTF-8 /]
+[template public classOnto(aClass : uml::Class)]
+  # class [aClass.name/]
+  # based on the UML class [aClass.qualifiedName/]
+  [aClass.iri()/]
+    a rdfs:Class, owl:Class, ucmis:Class;
+    rdfs:label "[aClass.name/]";
+    [aClass.ownedComment.rdfs_comment()/]
+    [aClass.superClasses()/]
+  .
+  
+  [for (anAttribute : uml::Property | aClass.e_attributes())]
+    [anAttribute.attributeOnto()/]
+  [/for]
+  
+  [for (anAssociation : uml::Association | aClass.eInverse(uml::Association)->select(anAssociation | anAssociation.source() = aClass))]
+    [anAssociation.associationOnto(aClass)/]
+  [/for]
+[/template]

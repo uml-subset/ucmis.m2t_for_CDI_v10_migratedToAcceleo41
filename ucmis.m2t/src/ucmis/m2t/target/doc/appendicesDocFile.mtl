@@ -1,0 +1,190 @@
+[**
+ * The documentation of the module indices.
+ */]
+[module appendicesDocFile('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::query::modelQuery/]
+[import ucmis::m2t::query::ucmisUtility/]
+[import ucmis::m2t::target::doc::inheritanceTreeDiagramDocFile/]
+[import ucmis::m2t::target::doc::puUtilityDoc/]
+[import ucmis::m2t::target::doc::rstUtilityDoc/]
+
+[comment encoding = UTF-8 /]
+[**
+ * The documentation of the template allClassesList.
+ * @param aClass
+*/]
+[template public appendicesIndex(aModel : uml::Model)]
+  [file (aModel.e_filePath('doc').concat('/Appendices/index.rst'), overwrite, 'UTF-8')]
+    [aModel.rst_generationMessageDoc()/]
+    ['Appendices'.rst_header('=')/]
+    
+    .. toctree::
+       :titlesonly:
+    
+       AllClassesList.rst
+       AllAssociationsList.rst
+       AllDataTypesList.rst
+       AllPackagesList.rst
+       InheritanceTreeDiagram/index.rst
+    
+  [/file]
+  [aModel.allClassesList()/]
+  [aModel.allAssociationsList()/]
+  [aModel.allDataTypesList()/]
+  [aModel.allPackagesList()/]
+  [aModel.inheritanceTreeDiagram()/]
+  
+[/template]
+
+[**
+ * The documentation of the template allClassesList.
+ * @param aClass
+*/]
+[template public allClassesList(aModel : uml::Model)]
+  [file (aModel.e_filePath('doc').concat('/Appendices/AllClassesList.rst'), overwrite, 'UTF-8')]
+    [aModel.rst_generationMessageDoc()/]
+    
+    .. _allClassesList:
+    
+    ['All Classes (list)'.rst_header('=')/]
+    
+    .. list-table::
+       :header-rows: 1
+       :class: classes-list
+    
+       * - Class
+         - Package
+         - Super Classes
+         - Is Abstract
+         - Has Subclasses
+         - Direct Subclasses
+         - All Subclasses
+         - Own Associations
+         - Inherited Associations
+         - Own Attributes
+         - Inherited Attributes
+    [for (aClass : uml::Class | aModel.e_allClasses())]
+         * - [aClass.rst_classNameReference()/]
+           - :ref:`[aClass.package.qualifiedName/]`
+           - [aClass.e_allSuperclasses()->size()/]
+           - [if (aClass.isAbstract)]yes[else]no[/if]
+           - [if (aClass.e_subClasses()->notEmpty())]yes[else]no[/if]
+           - [aClass.e_subClasses()->size()/]
+           - [aClass.e_allSubclasses()->size()/] 
+           - [aClass.eInverse(uml::Association)->size()/]
+           - [aClass.e_inheritedAssociations()->size()/]
+           - [aClass.e_attributes()->size()/]
+           - [aClass.e_inheritedAttributes()->size()/]
+    [/for]
+  [/file]
+[/template]
+
+[template public allDataTypesList(aModel : uml::Model)]
+  [file (aModel.e_filePath('doc').concat('/Appendices/AllDataTypesList.rst'), overwrite, 'UTF-8')]
+    [aModel.rst_generationMessageDoc()/]
+    
+    .. _allDataTypesList:
+    
+    ['All Data Types (list)'.rst_header('=')/]
+    
+    .. list-table::
+       :header-rows: 1
+       :class: datatypes-list
+    
+       * - Name
+         - Package Name
+         - Type
+         - All Super-Datatypes
+         - Is Abstract
+         - All Sub-Datatypes
+         - Uses in Classes
+         - Uses in Datatypes
+         - Own Attributes
+         - Inherited Attributes
+    [for (aDataType : uml::DataType | aModel.e_allDataTypes())]
+         * - [aDataType.rst_classifierNameReference()/]
+           - :ref:`[aDataType.package.qualifiedName/]`
+           - [aDataType.eClass().name/]
+           - [aDataType.e_allSuperDataTypes()->size()/]
+           - [if (aDataType.isAbstract)]yes[else]no[/if]
+           - [aDataType.e_allSubDataTypes()->size()/] 
+           - [aDataType.e_dataTypeUseProperties()->select(temp1 | temp1.owner.oclIsTypeOf(uml::Class))->size()/]
+           - [aDataType.e_dataTypeUseProperties()->select(temp2 | temp2.owner.oclIsKindOf(uml::DataType))->size()/]
+           - [aDataType.e_attributes()->size()/]
+           - [aDataType.e_inheritedAttributes()->size()/]
+    [/for]
+  [/file]
+[/template]
+
+[**
+ * The documentation of the template allClassesList.
+ * @param aClass
+*/]
+[template public allPackagesList(aModel : uml::Model)]
+  [file (aModel.e_filePath('doc').concat('/Appendices/AllPackagesList.rst'), overwrite, 'UTF-8')]
+    [aModel.rst_generationMessageDoc()/]
+    
+    .. _allPackagesList:
+    
+    ['All Packages (list)'.rst_header('=')/]
+    
+    .. list-table::
+       :header-rows: 1
+       :class: packages-list
+    
+       * - Package
+         - Parent Package
+         - N of Classes
+    [for (aPackage : uml::Package | aModel.e_allPackages())]
+         * - :ref:`[aPackage.qualifiedName/]`
+           - :ref:`[aPackage.nestingPackage.getQualifiedName().replace(aModel.name.concat('::'), '')/]<[aPackage.nestingPackage.qualifiedName/]>`
+           - [aPackage.eAllContents(uml::Class)->size()/]
+    [/for]
+  [/file]
+[/template]
+
+[**
+ * The documentation of the template allClassesList.
+ * @param aClass
+*/]
+[template public allAssociationsList(aModel : uml::Model)]
+  [file (aModel.e_filePath('doc').concat('/Appendices/AllAssociationsList.rst'), overwrite, 'UTF-8')]
+    [aModel.rst_generationMessageDoc()/]
+    
+    .. _allAssociationsList:
+    
+    ['All Associations (list)'.rst_header('=')/]
+    
+    .. list-table::
+       :header-rows: 1
+       :class: dt-allassociations
+    
+       * - Coupling (package)
+         - Package 1
+         - Class 1
+         - Navigable 1
+         - Aggregation Kind 1
+         - Multiplicity 1
+         - Association Name
+         - Multiplicity 2
+         - Aggregation Kind 2
+         - Navigable 2
+         - Class 2
+         - Package 2
+    [for (anAssociation : uml::Association | aModel.eAllContents(uml::Association))]
+         * - [if (anAssociation.ownedEnd->first().getOtherEnd().type.package.name = anAssociation.ownedEnd->first().type.package.name)]no[else]yes[/if]
+           - :ref:`[anAssociation.ownedEnd->first().type.package.qualifiedName/]`
+           - :ref:`[anAssociation.ownedEnd->first().type.qualifiedName/]`
+           - [if (anAssociation.ownedEnd->first().isNavigable())]x[/if]
+           - [anAssociation.ownedEnd->first().aggregation/]
+           - [anAssociation.ownedEnd->first().e_multiplicity()/]
+           - [if (anAssociation.ownedComment->asSequence()->collect(temp4 | temp4.body)->toString().trim().size() > 0)]:abbr:`[anAssociation.ucmis_shortAssociationName()/]([anAssociation.ownedComment->asSequence()->collect(temp3 | temp3.body)->toString().trim()/])`[else][anAssociation.ucmis_shortAssociationName()/][/if]
+           - [anAssociation.ownedEnd->first().getOtherEnd().e_multiplicity()/]
+           - [anAssociation.ownedEnd->first().getOtherEnd().aggregation/]
+           - [if (anAssociation.ownedEnd->first().getOtherEnd().isNavigable())]x[/if]
+           - :ref:`[anAssociation.ownedEnd->first().getOtherEnd().type.qualifiedName/]`
+           - [anAssociation.ownedEnd->first().getOtherEnd().type.package.name/]
+    [/for]
+  [/file]
+[/template]

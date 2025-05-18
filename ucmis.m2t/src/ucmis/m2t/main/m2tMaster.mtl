@@ -1,0 +1,60 @@
+[**
+ * Master for generating target languages on the basis of a UML class model
+ * 
+ * The model should comply to the the rules described in the
+ * document "UML Class Diagram Practitioner's Subset for Data Modeling".
+ * See {@https://ddi-alliance.bitbucket.io/DDI-CDI/DDI-CDI_Public_Review_1/}.
+ */]
+[module m2tMaster('http://www.eclipse.org/uml2/5.0.0/Types', 'http://www.eclipse.org/uml2/5.0.0/UML', 'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')/]
+
+[import ucmis::m2t::target::doc::modelDocFile/]
+[import ucmis::m2t::target::jsonld::modelJsonldFile/]
+[import ucmis::m2t::target::jsonschema::modelJschFile/]
+[import ucmis::m2t::target::onto::packageOntoFile/]
+[import ucmis::m2t::target::oo::modelOoFile/]
+[import ucmis::m2t::target::shacl::modelShaclFile/]
+[import ucmis::m2t::target::shex::modelShexFile/]
+[import ucmis::m2t::target::xsd::modelXsdFile/]
+[import ucmis::m2t::mapping::representation/]
+
+[comment encoding = UTF-8 /]
+[comment @main/]
+[**
+ * Process a UML class model
+ * Options can be set in a property file.
+ * Current options are: ootest, doc.
+ * ootest - template for the generation of object-oriented languages
+ * It generates a file hierarchy corresponding to the package/class hierarchy
+ * in the model. This results in a file per package, per class, and per
+ * data type with detailed information.
+*/]
+[template public processModel(aModel : uml::Model)]
+  [if (aModel.name = 'UCMISExample')]
+    	[aModel.documentRepresentation()/]
+  [else]
+    [if (aModel.getProperty('doc').trim().equalsIgnoreCase('true'))]
+      		[aModel.processModelDoc()/]
+    [/if]
+    [if (aModel.getProperty('jsonld').trim().equalsIgnoreCase('true'))]
+      		[aModel.generateJsonld()/]
+    [/if]
+    [if (aModel.getProperty('jsonschema').trim().equalsIgnoreCase('true'))]
+      		[aModel.generateJsonSchema()/]
+    [/if]
+    [if (aModel.getProperty('oo').trim().equalsIgnoreCase('true'))]
+      		[aModel.processModelOo()/]
+    [/if]
+    [if (aModel.getProperty('onto').trim().equalsIgnoreCase('true'))]
+      		[aModel.packageOntoFile()/]
+    [/if]
+    [if (aModel.getProperty('shacl').trim().equalsIgnoreCase('true'))]
+      		[aModel.packageShaclFile()/]
+    [/if]
+    [if (aModel.getProperty('shex').trim().equalsIgnoreCase('true'))]
+      		[aModel.processModelShex()/]
+    [/if]
+    [if (aModel.getProperty('xsd').trim().equalsIgnoreCase('true'))]
+      		[aModel.processModelXsd()/]
+    [/if]
+  [/if]
+[/template]
